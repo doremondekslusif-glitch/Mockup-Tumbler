@@ -1,10 +1,65 @@
 'use client';
 
-import { ChangeEvent, PointerEvent, useRef, useState } from "react";
+import { ChangeEvent, PointerEvent, useEffect, useRef, useState } from "react";
 
 const TUMBLERS = [
   { id: "arizona-500-merah", name: "Arizona 500 merah", image: "/ARIZONA%20500%20MERAH.png" },
 ];
+
+function WarpedDesign({src,scale,rotation,position,onPointerDown,onPointerMove,onPointerUp,dragging}:{src:string;scale:number;rotation:number;position:{x:number;y:number};onPointerDown:(e:PointerEvent<HTMLCanvasElement>)=>void;onPointerMove:(e:PointerEvent<HTMLCanvasElement>)=>void;onPointerUp:()=>void;dragging:boolean}) {
+  const canvasRef=useRef<HTMLCanvasElement>(null);
+
+  useEffect(()=>{
+    const canvas=canvasRef.current;
+    if(!canvas||!src)return;
+    const ctx=canvas.getContext("2d");
+    if(!ctx)return;
+    const rect=canvas.getBoundingClientRect();
+    const dpr=window.devicePixelRatio||1;
+    const w=Math.max(1,Math.round(rect.width*dpr));
+    const h=Math.max(1,Math.round(rect.height*dpr));
+    canvas.width=w; canvas.height=h;
+    ctx.clearRect(0,0,w,h);
+
+    const image=new Image();
+    image.onload=()=>{
+      const designW=rect.width*(scale/100);
+      const ratio=image.naturalHeight/image.naturalWidth;
+      const designH=Math.min(rect.height*0.92,designW*ratio);
+      const off=document.createElement("canvas");
+      off.width=Math.max(1,Math.round(designW*dpr));
+      off.height=Math.max(1,Math.round(designH*dpr));
+      const oc=off.getContext("2d");
+      if(!oc)return;
+      oc.save();
+      oc.translate(off.width/2,off.height/2);
+      oc.rotate(rotation*Math.PI/180);
+      oc.drawImage(image,-off.width/2,-off.height/2,off.width,off.height);
+      oc.restore();
+
+      const centerX=w/2+position.x*dpr;
+      const centerY=h/2+position.y*dpr;
+      const halfW=off.width/2;
+      const radius=Math.max(halfW*1.45,halfW+1);
+
+      ctx.clearRect(0,0,w,h);
+      for(let x=0;x<w;x++){
+        const nx=(x-centerX)/radius;
+        if(Math.abs(nx)>=1)continue;
+        const theta=Math.asin(nx);
+        const sourceX=(theta/Math.asin(Math.min(0.999,halfW/radius))+1)/2*off.width;
+        const columnW=Math.max(1,Math.ceil((radius*Math.cos(theta))/Math.max(1,halfW)));
+        if(sourceX<0||sourceX>=off.width)continue;
+        const sx=Math.max(0,Math.min(off.width-1,sourceX-columnW/2));
+        const sw=Math.min(off.width-sx,Math.max(1,columnW));
+        ctx.drawImage(off,sx,0,sw,off.height,x,centerY-off.height/2,Math.max(1,columnW),off.height);
+      }
+    };
+    image.src=src;
+  },[src,scale,rotation,position.x,position.y]);
+
+  return <canvas ref={canvasRef} className="warped-design" style={{cursor:dragging?"grabbing":"grab"}} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}/>;
+}
 
 export default function Home() {
   const [selectedTumbler, setSelectedTumbler] = useState(TUMBLERS[0]);
@@ -72,8 +127,8 @@ export default function Home() {
           <div className="mockup-stage">
             <div className="tumbler-image-wrap">
               <img className="tumbler-image" src={selectedTumbler.image} alt={selectedTumbler.name}/>
-              <div className="print-overlay">
-                {design.src?<div className="design-layer" style={{transform:"translate(calc(-50% + "+position.x+"px), calc(-50% + "+position.y+"px)) rotate("+rotation+"deg)",width:scale+"%",cursor:dragging?"grabbing":"grab"}} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}><img src={design.src} alt="Desain tumbler" draggable={false}/></div>
+              <div className="print-overlay"><div className="surface-guide" aria-hidden="true"/>
+                {design.src?<WarpedDesign src={design.src} scale={scale} rotation={rotation} position={position} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} dragging={dragging}/>
                 :<div className="empty-print"><span>＋</span><strong>Letakkan desain di sini</strong><small>Upload desain untuk mulai mengedit</small></div>}
               </div>
             </div>
