@@ -2,8 +2,10 @@
 
 import { ChangeEvent, PointerEvent, useEffect, useRef, useState } from "react";
 
+const BASE_PATH = "/Mockup-Tumbler";
+
 const TUMBLERS = [
-  { id: "arizona-500-merah", name: "Arizona 500 merah", image: "/ARIZONA%20500%20MERAH.png" },
+  { id: "arizona-500-merah", name: "Arizona 500 merah", image: `${BASE_PATH}/ARIZONA%20500%20MERAH.png` },
 ];
 
 function WarpedDesign({src,scale,rotation,position,onPointerDown,onPointerMove,onPointerUp,dragging}:{src:string;scale:number;rotation:number;position:{x:number;y:number};onPointerDown:(e:PointerEvent<HTMLCanvasElement>)=>void;onPointerMove:(e:PointerEvent<HTMLCanvasElement>)=>void;onPointerUp:()=>void;dragging:boolean}) {
