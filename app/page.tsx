@@ -28,15 +28,25 @@ function WarpedDesign({src,scale,rotation,position,onPointerDown,onPointerMove,o
       const designW=rect.width*(scale/100);
       const ratio=image.naturalHeight/image.naturalWidth;
       const designH=Math.min(rect.height*0.92,designW*ratio);
+
+      // Add transparent padding around the artwork before rotating it.
+      // This prevents the rotated corners from being clipped by the
+      // temporary canvas itself.
+      const angle=Math.abs((rotation%180)*Math.PI/180);
+      const sin=Math.abs(Math.sin(angle));
+      const cos=Math.abs(Math.cos(angle));
+      const rotatedW=designW*cos+designH*sin;
+      const rotatedH=designW*sin+designH*cos;
+      const pad=Math.max(8,Math.ceil(Math.max(designW,designH)*0.03));
       const off=document.createElement("canvas");
-      off.width=Math.max(1,Math.round(designW*dpr));
-      off.height=Math.max(1,Math.round(designH*dpr));
+      off.width=Math.max(1,Math.ceil((rotatedW+pad*2)*dpr));
+      off.height=Math.max(1,Math.ceil((rotatedH+pad*2)*dpr));
       const oc=off.getContext("2d");
       if(!oc)return;
       oc.save();
       oc.translate(off.width/2,off.height/2);
       oc.rotate(rotation*Math.PI/180);
-      oc.drawImage(image,-off.width/2,-off.height/2,off.width,off.height);
+      oc.drawImage(image,-designW*dpr/2,-designH*dpr/2,designW*dpr,designH*dpr);
       oc.restore();
 
       const centerX=w/2+position.x*dpr;
