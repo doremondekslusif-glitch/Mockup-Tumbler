@@ -77,13 +77,13 @@ export default function Home() {
     setPosition({x:0,y:0});
   }
   function resetEditor(){setScale(58);setRotation(0);setPosition({x:0,y:0});}
-  function onPointerDown(e:PointerEvent<HTMLDivElement>){
+  function onPointerDown(e:PointerEvent<HTMLCanvasElement>){
     if(!design.src)return;
     e.currentTarget.setPointerCapture(e.pointerId);
     dragStart.current={x:e.clientX-position.x,y:e.clientY-position.y};
     setDragging(true);
   }
-  function onPointerMove(e:PointerEvent<HTMLDivElement>){
+  function onPointerMove(e:PointerEvent<HTMLCanvasElement>){
     if(!dragging)return;
     setPosition({x:e.clientX-dragStart.current.x,y:e.clientY-dragStart.current.y});
   }
