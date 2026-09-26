@@ -2,7 +2,12 @@
 
 import { ChangeEvent, PointerEvent, useRef, useState } from "react";
 
+const TUMBLERS = [
+  { id: "arizona-500-merah", name: "Arizona 500 merah", image: "/ARIZONA%20500%20MERAH.png" },
+];
+
 export default function Home() {
+  const [selectedTumbler, setSelectedTumbler] = useState(TUMBLERS[0]);
   const [design,setDesign]=useState({src:"",name:""});
   const [scale,setScale]=useState(58);
   const [rotation,setRotation]=useState(0);
@@ -37,13 +42,22 @@ export default function Home() {
     </header>
 
     <section className="hero">
-      <div><p className="eyebrow">TAHAP 1 · EDITOR</p><h1>Buat mockup tumbler<br/><span>tanpa ribet.</span></h1><p className="hero-copy">Masukkan desainmu, atur ukurannya, lalu geser sampai posisinya pas di area tumbler.</p></div>
+      <div><p className="eyebrow">TAHAP 2 · PILIH TUMBLER</p><h1>Buat mockup tumbler<br/><span>tanpa ribet.</span></h1><p className="hero-copy">Pilih model tumbler yang tersedia, masukkan desainmu, lalu atur ukuran, posisi, dan rotasinya.</p></div>
       <div className="hero-badge"><span>●</span> Editor siap digunakan</div>
     </section>
 
     <section className="workspace">
       <aside className="panel controls-panel">
-        <div className="panel-heading"><div><p className="panel-kicker">01</p><h2>Desain</h2></div></div>
+        <div className="panel-heading"><div><p className="panel-kicker">01</p><h2>Pilih Tumbler</h2></div></div>
+        <div className="tumbler-catalog">
+          {TUMBLERS.map(tumbler=><button key={tumbler.id} className={"tumbler-card "+(selectedTumbler.id===tumbler.id?"active":"")} onClick={()=>{setSelectedTumbler(tumbler);resetEditor();}}>
+            <div className="catalog-image"><img src={tumbler.image} alt={tumbler.name}/></div>
+            <div><strong>{tumbler.name}</strong><small>{selectedTumbler.id===tumbler.id?"Dipilih":"Pilih model"}</small></div>
+          </button>)}
+        </div>
+
+        <div className="panel-divider"/>
+        <div className="panel-heading"><div><p className="panel-kicker">02</p><h2>Desain</h2></div></div>
         <button className="upload-box" onClick={()=>fileRef.current?.click()}><span className="upload-icon">＋</span><strong>{design.src?"Ganti desain":"Upload desain"}</strong><small>PNG, JPG, SVG</small></button>
         <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={uploadDesign}/>
         {design.src&&<div className="file-chip"><div className="file-thumb"><img src={design.src} alt=""/></div><div className="file-info"><strong>{design.name}</strong><span>Desain aktif</span></div></div>}
@@ -53,32 +67,31 @@ export default function Home() {
       </aside>
 
       <section className="panel preview-panel">
-        <div className="preview-header"><div><p className="panel-kicker">02</p><h2>Preview mockup</h2></div><span className="preview-status">LIVE</span></div>
+        <div className="preview-header"><div><p className="panel-kicker">03</p><h2>Preview mockup</h2></div><span className="preview-status">LIVE</span></div>
         <div className="canvas-wrap">
-          <div className="mockup-stage"><div className="tumbler-shadow"/>
-            <div className="tumbler">
-              <div className="tumbler-lid"><span/></div>
-              <div className="tumbler-body"><div className="tumbler-highlight"/>
-                <div className="print-area">
-                  {design.src?<div className="design-layer" style={{transform:"translate(calc(-50% + "+position.x+"px), calc(-50% + "+position.y+"px)) rotate("+rotation+"deg)",width:scale+"%",cursor:dragging?"grabbing":"grab"}} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}><img src={design.src} alt="Desain tumbler" draggable={false}/></div>
-                  :<div className="empty-print"><span>＋</span><strong>Letakkan desain di sini</strong><small>Upload desain untuk mulai mengedit</small></div>}
-                </div>
+          <div className="mockup-stage">
+            <div className="tumbler-image-wrap">
+              <img className="tumbler-image" src={selectedTumbler.image} alt={selectedTumbler.name}/>
+              <div className="print-overlay">
+                {design.src?<div className="design-layer" style={{transform:"translate(calc(-50% + "+position.x+"px), calc(-50% + "+position.y+"px)) rotate("+rotation+"deg)",width:scale+"%",cursor:dragging?"grabbing":"grab"}} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}><img src={design.src} alt="Desain tumbler" draggable={false}/></div>
+                :<div className="empty-print"><span>＋</span><strong>Letakkan desain di sini</strong><small>Upload desain untuk mulai mengedit</small></div>}
               </div>
             </div>
+            <div className="tumbler-shadow"/>
           </div>
         </div>
         <div className="preview-tip"><span>✦</span>{design.src?"Tekan dan geser desain untuk mengatur posisinya.":"Upload desain dari panel kiri untuk mulai."}</div>
       </section>
 
       <aside className="panel settings-panel">
-        <div className="panel-heading"><div><p className="panel-kicker">03</p><h2>Ekspor</h2></div></div>
-        <div className="setting-card"><span className="setting-icon">▣</span><div><strong>Mockup tumbler</strong><small>Preview transparan</small></div></div>
+        <div className="panel-heading"><div><p className="panel-kicker">04</p><h2>Ekspor</h2></div></div>
+        <div className="setting-card"><span className="setting-icon">▣</span><div><strong>{selectedTumbler.name}</strong><small>Mockup tumbler aktif</small></div></div>
         <div className="format-row"><span>Format</span><strong>PNG</strong></div>
         <div className="format-row"><span>Resolusi</span><strong>HD</strong></div>
         <button className="download-button" onClick={downloadPreview}>Download mockup <span>↓</span></button>
         <p className="small-note">Fitur ekspor gambar final akan disempurnakan di tahap berikutnya.</p>
       </aside>
     </section>
-    <footer>Mockup Tumbler · Tahap 1</footer>
+    <footer>Mockup Tumbler · Tahap 2</footer>
   </main>;
 }
